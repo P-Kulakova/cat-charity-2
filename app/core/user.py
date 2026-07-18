@@ -72,7 +72,10 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         request: Optional[Request] = None,
     ):
         """Выполнить действия после успешной регистрации."""
-        logger.info(f'Пользователь {user.email} зарегистрирован.')
+        logger.info(
+            'Пользователь %s зарегистрирован.',
+            user.email,
+        )
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):

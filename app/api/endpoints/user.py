@@ -25,7 +25,10 @@ router.include_router(
 users_router = fastapi_users.get_users_router(UserRead, UserUpdate)
 
 
-@router.delete('/users/{user_id}', status_code=status.HTTP_405_METHOD_NOT_ALLOWED)
+@router.delete(
+    '/users/{user_id}',
+    status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+)
 async def delete_user_forbidden(user_id: str):
     """Запрещает удаление пользователей."""
     raise HTTPException(

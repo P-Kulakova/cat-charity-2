@@ -21,7 +21,6 @@ from app.services.investment import invest_new_object
 router = APIRouter()
 SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 UserDep = Annotated[User, Depends(current_user)]
-SuperuserDep = Annotated[User, Depends(current_superuser)]
 
 
 @router.post(
@@ -37,8 +36,12 @@ async def create_donation(
     """Сделать пожертвование.
     Только для зарегистрированных пользователей.
     """
-    new_donation = await donation_crud.create(donation, session, commit=False)
-    new_donation.user_id = user.id
+    new_donation = await donation_crud.create(
+        donation,
+        session,
+        user=user,
+        commit=False,
+    )
     projects = await charity_project_crud.get_not_fully_invested(session)
     invest_new_object(new_donation, projects)
     await session.commit()
@@ -62,11 +65,9 @@ async def get_user_donations(session: SessionDep, user: UserDep):
     '/',
     response_model=list[DonationFullInfoDB],
     response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)],
 )
-async def get_all_donations(
-    session: SessionDep,
-    superuser: SuperuserDep,
-):
+async def get_all_donations(session: SessionDep):
     """Показать список всех пожертвований.
     Только для суперюзеров.
     """

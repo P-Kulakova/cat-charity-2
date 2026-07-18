@@ -16,7 +16,6 @@ from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charity_project_crud
 from app.crud.donation import donation_crud
-from app.models.user import User
 from app.schemas.charity_project import (
     CharityProjectCreate,
     CharityProjectDB,
@@ -27,18 +26,17 @@ from app.services.investment import close_if_fully_invested, invest_new_object
 
 router = APIRouter()
 SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
-SuperuserDep = Annotated[User, Depends(current_superuser)]
 
 
 @router.post(
     '/',
     response_model=CharityProjectDB,
     response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)],
 )
 async def create_charity_project(
     charity_project: CharityProjectCreate,
     session: SessionDep,
-    superuser: SuperuserDep,
 ):
     """Создаёт проект и распределяет в него свободные пожертвования.
     Только для суперпользователей.
@@ -72,12 +70,12 @@ async def get_charity_projects(session: SessionDep):
     '/{project_id}',
     response_model=CharityProjectDB,
     response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)],
 )
 async def update_charity_project(
     project_id: int,
     charity_project: CharityProjectUpdate,
     session: SessionDep,
-    superuser: SuperuserDep,
 ):
     """Частично обновляет целевой проект.
     Только для суперпользователей.
@@ -107,11 +105,11 @@ async def update_charity_project(
     '/{project_id}',
     response_model=CharityProjectDB,
     response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)],
 )
 async def delete_charity_project(
     project_id: int,
     session: SessionDep,
-    superuser: SuperuserDep,
 ):
     """Удаляет проект, если он не закрыт и в него не внесены средства.
     Только для суперпользователей.

@@ -14,7 +14,7 @@ class Donation(InvestmentMixin, CommonMixin, Base):
     user_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey('user.id', ondelete='CASCADE'),
-        nullable=True,
+        nullable=False,
     )
 
     def __repr__(self):

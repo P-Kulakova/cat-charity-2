@@ -1,5 +1,6 @@
 """Управление пользователями и аутентификация."""
 
+import logging
 from typing import Annotated, Optional, Union
 
 from fastapi import Depends, Request
@@ -18,9 +19,13 @@ from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.constants import PASSWORD_MIN_LENGTH, TOKEN_LIFETIME
 from app.core.db import get_async_session
 from app.models.user import User
 from app.schemas.user import UserCreate
+
+
+logger = logging.getLogger(__name__)
 
 
 async def get_user_db(
@@ -33,8 +38,8 @@ bearer_transport = BearerTransport(tokenUrl='auth/jwt/login')
 
 
 def get_jwt_strategy() -> JWTStrategy:
-    """Return JWT strategy for fastapi-users."""
-    return JWTStrategy(secret=settings.secret, lifetime_seconds=3600)
+    """Вернуть JWT-стратегию для fastapi-users."""
+    return JWTStrategy(secret=settings.secret, lifetime_seconds=TOKEN_LIFETIME)
 
 
 auth_backend = AuthenticationBackend(
@@ -50,12 +55,15 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         password: str,
         user: Union[UserCreate, User],
     ) -> None:
-        """Validate password for newly created users."""
-        if len(password) < 3:
-            error = 'Password must contain at least 3 characters'
+        """Проверить пароль при создании пользователя."""
+        if len(password) < PASSWORD_MIN_LENGTH:
+            error = (
+                'Пароль должен содержать не менее '
+                f'{PASSWORD_MIN_LENGTH} символов'
+            )
             raise InvalidPasswordException(reason=error)
         if user.email in password:
-            error = 'Password must not contain your email'
+            error = 'Пароль не должен содержать email пользователя'
             raise InvalidPasswordException(reason=error)
 
     async def on_after_register(
@@ -63,8 +71,8 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         user: User,
         request: Optional[Request] = None,
     ):
-        """Run after successful registration."""
-        print(f'User {user.email} has registered.')
+        """Выполнить действия после успешной регистрации."""
+        logger.info(f'Пользователь {user.email} зарегистрирован.')
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):

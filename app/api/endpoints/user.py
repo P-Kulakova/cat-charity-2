@@ -1,6 +1,6 @@
 """Эндпоинты регистрации, аутентификации и управления пользователями."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 
 from app.core.user import auth_backend, fastapi_users
 from app.schemas.user import UserCreate, UserRead, UserUpdate
@@ -16,7 +16,6 @@ router.include_router(
 )
 
 register_router = fastapi_users.get_register_router(UserRead, UserCreate)
-register_router.__doc__ = 'Регистрация нового пользователя. Доступно всем.'
 router.include_router(
     register_router,
     prefix='/auth',
@@ -24,9 +23,17 @@ router.include_router(
 )
 
 users_router = fastapi_users.get_users_router(UserRead, UserUpdate)
-users_router.routes = [
-    route for route in users_router.routes if route.name != 'users:delete_user'
-]
+
+
+@router.delete('/users/{user_id}', status_code=status.HTTP_405_METHOD_NOT_ALLOWED)
+async def delete_user_forbidden(user_id: str):
+    """Запрещает удаление пользователей."""
+    raise HTTPException(
+        status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        detail='Удаление пользователей запрещено.',
+    )
+
+
 router.include_router(
     users_router,
     prefix='/users',

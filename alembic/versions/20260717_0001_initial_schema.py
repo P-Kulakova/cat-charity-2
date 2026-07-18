@@ -46,7 +46,7 @@ def upgrade():
     op.create_table(
         'donation',
         sa.Column('comment', sa.Text(), nullable=True),
-        sa.Column('user_id', sa.Integer(), nullable=True),
+        sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('full_amount', sa.Integer(), nullable=False),
         sa.Column('invested_amount', sa.Integer(), nullable=False),
         sa.Column('fully_invested', sa.Boolean(), nullable=False),

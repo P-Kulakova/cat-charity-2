@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     database_url: str = 'sqlite+aiosqlite:///./fastapi.db'
     first_superuser_email: Optional[EmailStr] = None
     first_superuser_password: Optional[str] = None
-    secret: str = 'IDontPassTestWithoutDefaultSecret'
+    secret: str
 
     model_config = SettingsConfigDict(env_file='.env')
 
